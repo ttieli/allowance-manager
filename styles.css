@@ -919,4 +919,33 @@ input, select, textarea {
 
 .quick-zero:active {
     transform: scale(0.95);
+}
+
+/* 版本历史和同步Git按钮样式 */
+.version-history-btn, .sync-git-btn {
+    background-color: #F2F4F7 !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+    width: 80% !important;
+    margin-top: 10px;
+    display: block;
+}
+
+.version-history-btn {
+    background-color: rgba(28, 132, 255, 0.08) !important;
+    color: var(--primary-color) !important;
+    border-color: rgba(28, 132, 255, 0.2) !important;
+}
+
+.sync-git-btn {
+    background-color: rgba(0, 191, 165, 0.08) !important;
+    color: var(--success-color) !important;
+    border-color: rgba(0, 191, 165, 0.2) !important;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    .version-history-btn, .sync-git-btn, .import-initial-data-btn {
+        width: 100% !important;
+    }
 } 

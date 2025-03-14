@@ -1144,6 +1144,187 @@ function importInitialData() {
         });
 }
 
+// 同步Git提交历史记录到数据库
+function syncGitHistoryToDatabase() {
+    // 检查用户登录状态
+    if (!firebase.auth().currentUser) {
+        alert('请先登录再进行操作');
+        return;
+    }
+    
+    const userPath = getUserDataPath();
+    if (!userPath) {
+        alert('无法获取用户数据路径');
+        return;
+    }
+    
+    // 显示同步状态
+    syncStatus = 'syncing';
+    updateSyncUI();
+    
+    // 创建一个包含版本信息的对象
+    const versionData = {
+        version: '2.6',
+        updateDate: new Date().toISOString(),
+        description: '优化操作方式：增减时长支持1分钟精度，移除60分钟按钮',
+        updatedBy: firebase.auth().currentUser.email,
+        features: [
+            '添加了1分钟精度的减少按钮',
+            '移除了60分钟按钮优化界面',
+            '保持清零功能'
+        ]
+    };
+    
+    // 获取现有的版本历史记录
+    database.ref(`${userPath}/versionHistory`).once('value')
+        .then(snapshot => {
+            let history = snapshot.val() || [];
+            
+            // 确保历史记录是数组
+            if (!Array.isArray(history)) {
+                history = [];
+            }
+            
+            // 添加新版本信息到历史记录
+            history.push(versionData);
+            
+            // 如果历史记录过长，保留最近20条
+            if (history.length > 20) {
+                history = history.slice(history.length - 20);
+            }
+            
+            // 保存版本历史记录
+            return database.ref(`${userPath}/versionHistory`).set(history);
+        })
+        .then(() => {
+            alert('版本历史记录同步成功！');
+            syncStatus = 'online';
+            updateSyncUI();
+        })
+        .catch(error => {
+            console.error('Error syncing version history:', error);
+            alert(`同步版本历史记录失败: ${error.message}`);
+            syncStatus = 'offline';
+            updateSyncUI();
+        });
+}
+
+// 显示版本历史记录
+function showVersionHistory() {
+    if (!firebase.auth().currentUser) {
+        alert('请先登录再进行操作');
+        return;
+    }
+    
+    const userPath = getUserDataPath();
+    if (!userPath) {
+        alert('无法获取用户数据路径');
+        return;
+    }
+    
+    // 获取版本历史记录
+    database.ref(`${userPath}/versionHistory`).once('value')
+        .then(snapshot => {
+            const history = snapshot.val() || [];
+            
+            if (!history.length) {
+                alert('暂无版本历史记录');
+                return;
+            }
+            
+            // 创建模态框显示历史记录
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+            
+            const content = document.createElement('div');
+            content.style.backgroundColor = 'white';
+            content.style.padding = '20px';
+            content.style.borderRadius = '10px';
+            content.style.width = '90%';
+            content.style.maxWidth = '600px';
+            content.style.maxHeight = '80vh';
+            content.style.overflowY = 'auto';
+            
+            const title = document.createElement('h2');
+            title.textContent = '版本历史记录';
+            title.style.marginBottom = '20px';
+            
+            content.appendChild(title);
+            
+            // 显示历史记录
+            history.slice().reverse().forEach(version => {
+                const versionItem = document.createElement('div');
+                versionItem.style.marginBottom = '15px';
+                versionItem.style.paddingBottom = '15px';
+                versionItem.style.borderBottom = '1px solid #eee';
+                
+                const versionTitle = document.createElement('h3');
+                versionTitle.textContent = `版本 ${version.version} (${new Date(version.updateDate).toLocaleDateString()})`;
+                versionTitle.style.marginBottom = '5px';
+                
+                const versionDesc = document.createElement('p');
+                versionDesc.textContent = version.description;
+                versionDesc.style.marginBottom = '10px';
+                
+                const updatedBy = document.createElement('p');
+                updatedBy.textContent = `更新者: ${version.updatedBy}`;
+                updatedBy.style.fontSize = '14px';
+                updatedBy.style.color = '#666';
+                
+                versionItem.appendChild(versionTitle);
+                versionItem.appendChild(versionDesc);
+                versionItem.appendChild(updatedBy);
+                
+                if (version.features && version.features.length) {
+                    const featuresList = document.createElement('ul');
+                    featuresList.style.marginLeft = '20px';
+                    
+                    version.features.forEach(feature => {
+                        const featureItem = document.createElement('li');
+                        featureItem.textContent = feature;
+                        featuresList.appendChild(featureItem);
+                    });
+                    
+                    versionItem.appendChild(featuresList);
+                }
+                
+                content.appendChild(versionItem);
+            });
+            
+            const closeButton = document.createElement('button');
+            closeButton.textContent = '关闭';
+            closeButton.style.marginTop = '20px';
+            closeButton.style.padding = '10px 20px';
+            closeButton.style.backgroundColor = '#3498db';
+            closeButton.style.color = 'white';
+            closeButton.style.border = 'none';
+            closeButton.style.borderRadius = '5px';
+            closeButton.style.cursor = 'pointer';
+            
+            closeButton.onclick = function() {
+                document.body.removeChild(modal);
+            };
+            
+            content.appendChild(closeButton);
+            modal.appendChild(content);
+            
+            document.body.appendChild(modal);
+        })
+        .catch(error => {
+            console.error('Error loading version history:', error);
+            alert(`加载版本历史记录失败: ${error.message}`);
+        });
+}
+
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
     // 加载用户设置
@@ -1184,6 +1365,20 @@ document.addEventListener('DOMContentLoaded', function() {
         initButton.onclick = importInitialData;
         initButton.className = 'import-initial-data-btn';
         dataManagementDiv.appendChild(initButton);
+        
+        // 添加版本历史按钮
+        const versionHistoryButton = document.createElement('button');
+        versionHistoryButton.innerText = '查看版本历史';
+        versionHistoryButton.onclick = showVersionHistory;
+        versionHistoryButton.className = 'version-history-btn';
+        dataManagementDiv.appendChild(versionHistoryButton);
+        
+        // 添加同步Git历史按钮
+        const syncGitButton = document.createElement('button');
+        syncGitButton.innerText = '同步版本历史';
+        syncGitButton.onclick = syncGitHistoryToDatabase;
+        syncGitButton.className = 'sync-git-btn';
+        dataManagementDiv.appendChild(syncGitButton);
     }
     
     // 处理各浏览器事件处理器的兼容性问题
