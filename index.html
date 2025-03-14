@@ -88,10 +88,11 @@
                     <button class="use-button" onclick="showActionDialog('xiaoha-time', 'use')">使用</button>
                 </div>
                 
-                <!-- 快捷操作按钮 - 简化版 -->
+                <!-- 快捷操作按钮 -->
                 <div class="button-grid">
                     <h3>快捷操作（分钟）</h3>
                     <div class="grid-container time-grid">
+                        <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 1)">+1</button>
                         <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 5)">+5</button>
                         <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 10)">+10</button>
                         <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 30)">+30</button>
@@ -102,7 +103,7 @@
                         <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 5)">-5</button>
                         <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 10)">-10</button>
                         <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 30)">-30</button>
-                        <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 60)">-60</button>
+                        <button class="quick-zero" onclick="resetToZero('xiaoha-time')">清零</button>
                     </div>
                 </div>
                 
@@ -149,10 +150,11 @@
                     <button class="use-button" onclick="showActionDialog('yezi-time', 'use')">使用</button>
                 </div>
                 
-                <!-- 快捷操作按钮 - 简化版 -->
+                <!-- 快捷操作按钮 -->
                 <div class="button-grid">
                     <h3>快捷操作（分钟）</h3>
                     <div class="grid-container time-grid">
+                        <button class="quick-add" onclick="quickAction('yezi-time', 'add', 1)">+1</button>
                         <button class="quick-add" onclick="quickAction('yezi-time', 'add', 5)">+5</button>
                         <button class="quick-add" onclick="quickAction('yezi-time', 'add', 10)">+10</button>
                         <button class="quick-add" onclick="quickAction('yezi-time', 'add', 30)">+30</button>
@@ -163,7 +165,7 @@
                         <button class="quick-use" onclick="quickAction('yezi-time', 'use', 5)">-5</button>
                         <button class="quick-use" onclick="quickAction('yezi-time', 'use', 10)">-10</button>
                         <button class="quick-use" onclick="quickAction('yezi-time', 'use', 30)">-30</button>
-                        <button class="quick-use" onclick="quickAction('yezi-time', 'use', 60)">-60</button>
+                        <button class="quick-zero" onclick="resetToZero('yezi-time')">清零</button>
                     </div>
                 </div>
                 
@@ -179,7 +181,7 @@
         </div>
         
         <div class="footer">
-            <p>家庭额度管理系统 v2.4 | <a href="https://github.com/ttieli/allowance-manager" target="_blank">GitHub</a></p>
+            <p>家庭额度管理系统 v2.5 | <a href="https://github.com/ttieli/allowance-manager" target="_blank">GitHub</a></p>
         </div>
     </div>
     

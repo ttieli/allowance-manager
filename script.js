@@ -22,8 +22,8 @@ let syncStatus = 'offline';
 
 // 用户设置
 let userSettings = {
-    showDetailDialog: true,  // 是否显示详细录入对话框
-    autoSaveChanges: false   // 是否自动保存更改（不显示对话框）
+    showDetailDialog: false,  // 默认不显示详细录入对话框
+    autoSaveChanges: true     // 默认自动保存更改（不显示对话框）
 };
 
 // 初始化时从localStorage获取设置
@@ -1273,4 +1273,105 @@ function setOperatorDefaultByEmail(email) {
 function closeQuickDialog() {
     document.getElementById('quick-action-dialog').style.display = 'none';
     document.getElementById('quick-action-form').reset();
+}
+
+// 清零函数 - 将时长重置为0
+function resetToZero(type) {
+    if (!firebase.auth().currentUser) {
+        alert('请先登录再进行操作');
+        return;
+    }
+    
+    const userPath = getUserDataPath();
+    if (!userPath) {
+        alert('无法获取用户数据路径');
+        return;
+    }
+    
+    // 二次确认
+    if (!confirm(`确定要将${typeNames[type]}清零吗？`)) {
+        return;
+    }
+    
+    // 设置默认操作人
+    let operator = getCurrentUserOperator();
+    if (!operator) {
+        if (type.includes('xiaoha')) {
+            operator = '小哈';
+        } else if (type.includes('yezi')) {
+            operator = '椰子';
+        } else {
+            operator = '系统';
+        }
+    }
+    
+    // 显示同步状态
+    syncStatus = 'syncing';
+    updateSyncUI();
+    
+    // 显示操作反馈
+    const valueElement = document.getElementById(`${type}-value`);
+    if (valueElement) {
+        valueElement.classList.add('updating');
+        // 过渡动画效果，表示正在更新
+        setTimeout(() => valueElement.classList.remove('updating'), 1000);
+    }
+    
+    // 获取最新数据
+    database.ref(`${userPath}/${type}`).once('value')
+        .then(snapshot => {
+            const data = snapshot.val() || {
+                type: type,
+                value: 0,
+                lastUpdate: null,
+                history: []
+            };
+            
+            // 记录当前值
+            const currentValue = data.value;
+            
+            // 创建历史记录项
+            const historyItem = {
+                timestamp: new Date().toISOString(),
+                action: 'use',  // 视为"使用"操作
+                amount: currentValue,  // 使用当前全部值
+                reason: '清零操作',
+                operator: operator
+            };
+            
+            // 更新余额为0
+            data.value = 0;
+            
+            // 更新最后更新时间
+            data.lastUpdate = new Date().toISOString();
+            
+            // 添加到历史记录
+            if (!data.history) data.history = [];
+            data.history.push(historyItem);
+            
+            // 限制历史记录最多保存50条
+            if (data.history.length > 50) {
+                data.history = data.history.slice(data.history.length - 50);
+            }
+            
+            // 保存数据
+            return database.ref(`${userPath}/${type}`).set(data);
+        })
+        .then(() => {
+            // 更新同步状态
+            syncStatus = 'online';
+            updateSyncUI();
+            
+            // 显示临时成功消息
+            showToast(`${typeNames[type]}已清零`, 'success');
+        })
+        .catch(error => {
+            console.error(`Error resetting ${type} to zero:`, error);
+            alert(`操作失败: ${error.message}`);
+            syncStatus = 'offline';
+            updateSyncUI();
+            
+            // 显示临时错误消息
+            showToast('清零操作失败，请重试', 'error');
+        });
 } 

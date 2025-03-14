@@ -897,4 +897,26 @@ input, select, textarea {
     .mobile-friendly-header .user-info {
         margin-top: 6px;
     }
+}
+
+/* 清零按钮样式 */
+.quick-zero {
+    background-color: rgba(97, 97, 97, 0.12);
+    color: #555555;
+    border: 1px solid rgba(97, 97, 97, 0.2);
+    padding: 12px 0;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+    letter-spacing: 0.3px;
+}
+
+.quick-zero:hover {
+    background-color: rgba(97, 97, 97, 0.18);
+}
+
+.quick-zero:active {
+    transform: scale(0.95);
 } 
