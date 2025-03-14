@@ -662,69 +662,88 @@ function checkMonthlyReset() {
     if (!userPath) return;
     
     const now = new Date();
-    const today = now.getDate();
     
-    // 获取上次检查时间
-    try {
-        const lastCheckStr = localStorage.getItem('last-reset-check');
-        
-        if (lastCheckStr) {
-            const lastCheck = new Date(lastCheckStr);
-            const lastCheckDay = lastCheck.getDate();
-            const lastCheckMonth = lastCheck.getMonth();
-            const lastCheckYear = lastCheck.getFullYear();
-            
-            // 如果当天已经检查过，则跳过
-            if (today === lastCheckDay && 
-                now.getMonth() === lastCheckMonth && 
-                now.getFullYear() === lastCheckYear) {
-                return;
-            }
-        }
-    } catch (e) {
-        console.error('Error checking last reset:', e);
-    }
+    // 遍历需要自动重置的类型
+    autoResetTypes.forEach(type => {
+        database.ref(`${userPath}/${type}`).once('value')
+            .then(snapshot => {
+                const data = snapshot.val();
+                if (!data) return;
+                
+                // 如果没有最后更新时间，设置当前时间并返回
+                if (!data.lastUpdate) {
+                    data.lastUpdate = now.toISOString();
+                    return database.ref(`${userPath}/${type}`).update({ lastUpdate: data.lastUpdate });
+                }
+                
+                // 获取上一次更新的日期
+                const lastUpdate = new Date(data.lastUpdate);
+                
+                // 检查是否需要增加月度额度
+                const missedMonths = getMissedMonths(lastUpdate, now);
+                console.log(`检查${typeNames[type]}月度重置: 上次更新 ${formatDateTime(data.lastUpdate)}, 错过的月份数: ${missedMonths}`);
+                
+                if (missedMonths > 0) {
+                    // 确保历史记录存在
+                    if (!data.history) data.history = [];
+                    
+                    // 添加历史记录
+                    data.history.push({
+                        timestamp: now.toISOString(),
+                        action: 'add',
+                        amount: missedMonths,
+                        reason: missedMonths === 1 ? '每月自动增加' : `自动增加(补${missedMonths}个月)`,
+                        operator: '系统'
+                    });
+                    
+                    // 增加相应数量的额度
+                    data.value = (data.value || 0) + missedMonths;
+                    
+                    // 更新最后更新时间
+                    data.lastUpdate = now.toISOString();
+                    
+                    console.log(`为${typeNames[type]}增加${missedMonths}个月的额度，新余额: ${data.value}`);
+                    
+                    // 保存数据
+                    return database.ref(`${userPath}/${type}`).set(data);
+                }
+            })
+            .catch(error => {
+                console.error(`Error in monthly reset for ${type}:`, error);
+            });
+    });
     
-    // 如果是每月1号，执行重置
-    if (today === 1) {
-        autoResetTypes.forEach(type => {
-            database.ref(`${userPath}/${type}`).once('value')
-                .then(snapshot => {
-                    const data = snapshot.val();
-                    if (data) {
-                        // 添加历史记录
-                        if (!data.history) data.history = [];
-                        
-                        data.history.push({
-                            timestamp: now.toISOString(),
-                            action: 'add',
-                            amount: 1,
-                            reason: '每月自动增加',
-                            operator: '系统'
-                        });
-                        
-                        // 增加1个单位额度
-                        data.value = (data.value || 0) + 1;
-                        
-                        // 更新最后更新时间
-                        data.lastUpdate = now.toISOString();
-                        
-                        // 保存数据
-                        return database.ref(`${userPath}/${type}`).set(data);
-                    }
-                })
-                .catch(error => {
-                    console.error(`Error in monthly reset for ${type}:`, error);
-                });
-        });
-    }
-    
-    // 保存本次检查时间
+    // 保存本次检查时间到本地存储
     try {
         localStorage.setItem('last-reset-check', now.toISOString());
     } catch (e) {
         console.error('Error saving reset check time:', e);
     }
+}
+
+// 计算从上次检查到现在错过了多少个月的1号
+function getMissedMonths(lastDate, currentDate) {
+    let missed = 0;
+    
+    // 复制日期对象以避免修改原始对象
+    const checkDate = new Date(lastDate);
+    const endDate = new Date(currentDate);
+    
+    // 将日期设置为下个月的1号
+    checkDate.setDate(1);
+    checkDate.setMonth(checkDate.getMonth() + 1);
+    
+    // 移除时间部分，只保留日期
+    checkDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+    
+    // 检查从上次更新后的第一个月1号到现在，经过了多少个月的1号
+    while (checkDate <= endDate) {
+        missed++;
+        checkDate.setMonth(checkDate.getMonth() + 1);
+    }
+    
+    return missed;
 }
 
 // 修改快捷操作功能
@@ -1165,14 +1184,15 @@ function syncGitHistoryToDatabase() {
     
     // 创建一个包含版本信息的对象
     const versionData = {
-        version: '2.8',
+        version: '2.9',
         updateDate: new Date().toISOString(),
-        description: '优化数据存储结构：实现多账号共享同一数据集',
+        description: '修复iOS PWA模式登录问题与优化数据库结构',
         updatedBy: firebase.auth().currentUser.email,
         features: [
-            '所有账号现在访问同一个共享数据库',
-            '解决了不同账号登录看到不同数据的问题',
-            '适合多人协作管理家庭额度'
+            '修复iOS主屏幕应用无法输入账号密码的问题',
+            '优化登录表单在移动设备上的使用体验',
+            '多账号共享同一数据库，实现家庭协作管理',
+            '改进用户反馈和错误处理'
         ]
     };
     
