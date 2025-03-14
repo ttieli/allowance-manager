@@ -73,7 +73,8 @@ function updateSyncUI() {
 function getUserDataPath() {
     const user = firebase.auth().currentUser;
     if (!user) return null;
-    return `users/${user.uid}/allowance`;
+    // 使用共享数据路径，所有用户访问同一个数据集
+    return `shared/family-allowance`;
 }
 
 // 加载数据
@@ -1164,14 +1165,14 @@ function syncGitHistoryToDatabase() {
     
     // 创建一个包含版本信息的对象
     const versionData = {
-        version: '2.6',
+        version: '2.8',
         updateDate: new Date().toISOString(),
-        description: '优化操作方式：增减时长支持1分钟精度，移除60分钟按钮',
+        description: '优化数据存储结构：实现多账号共享同一数据集',
         updatedBy: firebase.auth().currentUser.email,
         features: [
-            '添加了1分钟精度的减少按钮',
-            '移除了60分钟按钮优化界面',
-            '保持清零功能'
+            '所有账号现在访问同一个共享数据库',
+            '解决了不同账号登录看到不同数据的问题',
+            '适合多人协作管理家庭额度'
         ]
     };
     
