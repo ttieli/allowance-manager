@@ -880,4 +880,21 @@ input, select, textarea {
         max-width: none;
         bottom: 10px;
     }
+}
+
+/* 移动端页眉适配 */
+@media (max-width: 600px) {
+    .mobile-friendly-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .mobile-friendly-header h1 {
+        margin-bottom: 6px;
+    }
+    
+    .mobile-friendly-header .user-info {
+        margin-top: 6px;
+    }
 } 
