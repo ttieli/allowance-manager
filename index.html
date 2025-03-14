@@ -6,10 +6,41 @@
     <title>家庭额度管理系统</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
+    <!-- 登录界面 -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-box">
+            <h2>家庭额度管理系统</h2>
+            <p>请登录以使用同步功能</p>
+            <div class="auth-form">
+                <input type="email" id="login-email" placeholder="邮箱地址" required>
+                <input type="password" id="login-password" placeholder="密码" required>
+                <button onclick="loginWithEmailPassword()">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页面主内容 -->
     <div class="container">
-        <h1>家庭额度管理</h1>
+        <header>
+            <h1>家庭额度管理系统</h1>
+            <div class="user-info">
+                <span id="user-email"></span>
+                <button onclick="logout()" class="logout-btn">退出登录</button>
+            </div>
+        </header>
+        
+        <div class="welcome-message">
+            <div class="welcome-icon">📱</div>
+            <p>简单记录每一次额度变动，让家庭管理更轻松</p>
+        </div>
         
         <div class="tab-container">
             <button class="tab-button active" data-tab="xiaoha-allowance">小哈额度</button>
@@ -29,6 +60,17 @@
                     <button class="use-button" onclick="showActionDialog('xiaoha-allowance', 'use')">使用</button>
                 </div>
                 
+                <!-- 快捷操作按钮 -->
+                <div class="button-grid">
+                    <h3>快捷操作</h3>
+                    <div class="grid-container allowance-grid">
+                        <button class="quick-add" onclick="quickAction('xiaoha-allowance', 'add', 0.5)">+0.5</button>
+                        <button class="quick-add" onclick="quickAction('xiaoha-allowance', 'add', 1)">+1</button>
+                        <button class="quick-use" onclick="quickAction('xiaoha-allowance', 'use', 0.5)">-0.5</button>
+                        <button class="quick-use" onclick="quickAction('xiaoha-allowance', 'use', 1)">-1</button>
+                    </div>
+                </div>
+                
                 <h3>历史记录</h3>
                 <div class="history-list" id="xiaoha-allowance-history"></div>
             </div>
@@ -43,6 +85,24 @@
                 <div class="action-buttons">
                     <button class="add-button" onclick="showActionDialog('xiaoha-time', 'add')">增加</button>
                     <button class="use-button" onclick="showActionDialog('xiaoha-time', 'use')">使用</button>
+                </div>
+                
+                <!-- 快捷操作按钮 - 简化版 -->
+                <div class="button-grid">
+                    <h3>快捷操作（分钟）</h3>
+                    <div class="grid-container time-grid">
+                        <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 5)">+5</button>
+                        <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 10)">+10</button>
+                        <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 30)">+30</button>
+                        <button class="quick-add" onclick="quickAction('xiaoha-time', 'add', 60)">+60</button>
+                    </div>
+                    
+                    <div class="grid-container time-grid">
+                        <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 5)">-5</button>
+                        <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 10)">-10</button>
+                        <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 30)">-30</button>
+                        <button class="quick-use" onclick="quickAction('xiaoha-time', 'use', 60)">-60</button>
+                    </div>
                 </div>
                 
                 <h3>历史记录</h3>
@@ -61,6 +121,17 @@
                     <button class="use-button" onclick="showActionDialog('yezi-allowance', 'use')">使用</button>
                 </div>
                 
+                <!-- 快捷操作按钮 -->
+                <div class="button-grid">
+                    <h3>快捷操作</h3>
+                    <div class="grid-container allowance-grid">
+                        <button class="quick-add" onclick="quickAction('yezi-allowance', 'add', 0.5)">+0.5</button>
+                        <button class="quick-add" onclick="quickAction('yezi-allowance', 'add', 1)">+1</button>
+                        <button class="quick-use" onclick="quickAction('yezi-allowance', 'use', 0.5)">-0.5</button>
+                        <button class="quick-use" onclick="quickAction('yezi-allowance', 'use', 1)">-1</button>
+                    </div>
+                </div>
+                
                 <h3>历史记录</h3>
                 <div class="history-list" id="yezi-allowance-history"></div>
             </div>
@@ -77,6 +148,24 @@
                     <button class="use-button" onclick="showActionDialog('yezi-time', 'use')">使用</button>
                 </div>
                 
+                <!-- 快捷操作按钮 - 简化版 -->
+                <div class="button-grid">
+                    <h3>快捷操作（分钟）</h3>
+                    <div class="grid-container time-grid">
+                        <button class="quick-add" onclick="quickAction('yezi-time', 'add', 5)">+5</button>
+                        <button class="quick-add" onclick="quickAction('yezi-time', 'add', 10)">+10</button>
+                        <button class="quick-add" onclick="quickAction('yezi-time', 'add', 30)">+30</button>
+                        <button class="quick-add" onclick="quickAction('yezi-time', 'add', 60)">+60</button>
+                    </div>
+                    
+                    <div class="grid-container time-grid">
+                        <button class="quick-use" onclick="quickAction('yezi-time', 'use', 5)">-5</button>
+                        <button class="quick-use" onclick="quickAction('yezi-time', 'use', 10)">-10</button>
+                        <button class="quick-use" onclick="quickAction('yezi-time', 'use', 30)">-30</button>
+                        <button class="quick-use" onclick="quickAction('yezi-time', 'use', 60)">-60</button>
+                    </div>
+                </div>
+                
                 <h3>历史记录</h3>
                 <div class="history-list" id="yezi-time-history"></div>
             </div>
@@ -88,7 +177,7 @@
         </div>
         
         <div class="footer">
-            <p>家庭额度管理系统 v2.0 | <a href="https://github.com/YourUsername/allowance-manager" target="_blank">GitHub</a></p>
+            <p>家庭额度管理系统 v2.1 | <a href="https://github.com/ttieli/allowance-manager" target="_blank">GitHub</a></p>
         </div>
     </div>
     
@@ -141,6 +230,38 @@
                 <button onclick="importData()">导入</button>
                 <button onclick="closeImportDialog()">取消</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- 快捷操作对话框 -->
+    <div id="quick-action-dialog" class="dialog">
+        <div class="dialog-content">
+            <h2 id="quick-dialog-title">快捷操作</h2>
+            <form id="quick-action-form">
+                <input type="hidden" id="quick-action-type">
+                <input type="hidden" id="quick-action-category">
+                <input type="hidden" id="quick-action-amount">
+                
+                <div class="form-group">
+                    <label for="quick-action-reason">记录原因 (可选):</label>
+                    <input type="text" id="quick-action-reason" placeholder="可不填，直接点击确定">
+                </div>
+                
+                <div class="form-group">
+                    <label for="quick-action-operator">操作人:</label>
+                    <select id="quick-action-operator" required>
+                        <option value="爸爸">爸爸</option>
+                        <option value="妈妈">妈妈</option>
+                        <option value="小哈">小哈</option>
+                        <option value="椰子">椰子</option>
+                    </select>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" onclick="submitQuickAction()">确定</button>
+                    <button type="button" onclick="closeQuickDialog()">取消</button>
+                </div>
+            </form>
         </div>
     </div>
     
