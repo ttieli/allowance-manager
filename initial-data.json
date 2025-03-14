@@ -1,0 +1,86 @@
+{
+  "xiaoha-allowance": {
+    "type": "xiaoha-allowance",
+    "value": 1.5,
+    "lastUpdate": "2024-08-10T10:00:00.000Z",
+    "history": [
+      {
+        "timestamp": "2024-08-01T00:00:00.000Z",
+        "action": "add",
+        "amount": 1,
+        "reason": "每月自动增加",
+        "operator": "系统"
+      },
+      {
+        "timestamp": "2024-08-05T14:30:00.000Z",
+        "action": "add",
+        "amount": 0.5,
+        "reason": "任务达成奖励",
+        "operator": "爸爸"
+      }
+    ]
+  },
+  "xiaoha-time": {
+    "type": "xiaoha-time",
+    "value": 45,
+    "lastUpdate": "2024-08-10T12:30:00.000Z",
+    "history": [
+      {
+        "timestamp": "2024-08-02T09:15:00.000Z",
+        "action": "add",
+        "amount": 60,
+        "reason": "周末奖励",
+        "operator": "妈妈"
+      },
+      {
+        "timestamp": "2024-08-10T12:30:00.000Z",
+        "action": "use",
+        "amount": 15,
+        "reason": "玩游戏",
+        "operator": "小哈"
+      }
+    ]
+  },
+  "yezi-allowance": {
+    "type": "yezi-allowance",
+    "value": 2,
+    "lastUpdate": "2024-08-09T16:45:00.000Z",
+    "history": [
+      {
+        "timestamp": "2024-08-01T00:00:00.000Z",
+        "action": "add",
+        "amount": 1,
+        "reason": "每月自动增加",
+        "operator": "系统"
+      },
+      {
+        "timestamp": "2024-08-03T17:20:00.000Z",
+        "action": "add",
+        "amount": 1,
+        "reason": "表现优秀奖励",
+        "operator": "爸爸"
+      }
+    ]
+  },
+  "yezi-time": {
+    "type": "yezi-time",
+    "value": 30,
+    "lastUpdate": "2024-08-08T15:10:00.000Z",
+    "history": [
+      {
+        "timestamp": "2024-08-04T10:20:00.000Z",
+        "action": "add",
+        "amount": 60,
+        "reason": "周末奖励",
+        "operator": "妈妈"
+      },
+      {
+        "timestamp": "2024-08-08T15:10:00.000Z",
+        "action": "use",
+        "amount": 30,
+        "reason": "看电视",
+        "operator": "椰子"
+      }
+    ]
+  }
+} 

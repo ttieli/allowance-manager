@@ -812,8 +812,65 @@ function submitQuickAction() {
         });
 }
 
+// 导入初始数据
+function importInitialData() {
+    if (!firebase.auth().currentUser) {
+        alert('请先登录再进行操作');
+        return;
+    }
+    
+    if (!confirm('此操作将用初始数据覆盖当前数据，确定要继续吗？')) {
+        return;
+    }
+    
+    const userPath = getUserDataPath();
+    if (!userPath) {
+        alert('无法获取用户数据路径');
+        return;
+    }
+    
+    // 显示同步状态
+    syncStatus = 'syncing';
+    updateSyncUI();
+    
+    // 从initial-data.json加载初始数据
+    fetch('initial-data.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('无法加载初始数据文件');
+            }
+            return response.json();
+        })
+        .then(initialData => {
+            // 保存到Firebase
+            return database.ref(userPath).set(initialData);
+        })
+        .then(() => {
+            alert('初始数据导入成功!');
+            syncStatus = 'online';
+            updateSyncUI();
+        })
+        .catch(error => {
+            console.error('Error importing initial data:', error);
+            alert(`导入初始数据失败: ${error.message}`);
+            syncStatus = 'offline';
+            updateSyncUI();
+        });
+}
+
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
+    // 添加初始导入按钮到数据管理区域
+    const dataManagementDiv = document.querySelector('.data-management');
+    if (dataManagementDiv) {
+        const initButton = document.createElement('button');
+        initButton.innerText = '导入初始数据';
+        initButton.onclick = importInitialData;
+        initButton.style.backgroundColor = '#f7f9fc';
+        initButton.style.color = '#607D8B';
+        dataManagementDiv.appendChild(initButton);
+    }
+    
     // 更新用户界面
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
