@@ -1003,4 +1003,53 @@ input, select, textarea {
 @keyframes slideDown {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* iOS PWA 模式特定样式 */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+    /* 修复iOS PWA输入问题 */
+    .auth-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* iOS流畅滚动 */
+    }
+    
+    .auth-box {
+        margin: 20vh auto;
+        width: 85%;
+        padding: 24px 20px;
+        -webkit-appearance: none; /* 移除iOS默认样式 */
+    }
+    
+    .auth-form input {
+        font-size: 16px; /* 防止iOS放大 */
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        height: 48px;
+        border-radius: 8px;
+        -webkit-appearance: none; /* 移除iOS默认样式 */
+    }
+    
+    .auth-form button {
+        height: 48px;
+        min-height: 48px; /* 确保可点击区域足够大 */
+        margin-top: 8px;
+    }
+    
+    /* 确保聚焦时输入框保持在视窗内 */
+    input:focus {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+/* 解决iOS键盘弹出时位置问题 */
+@supports (-webkit-touch-callout: none) {
+    .auth-container {
+        padding-bottom: 20vh; /* 留出键盘空间 */
+    }
 } 

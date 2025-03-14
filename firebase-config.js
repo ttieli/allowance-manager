@@ -86,6 +86,57 @@ function hideLoginUI() {
     }
 }
 
+// 在文档加载完成后添加iOS PWA输入修复
+document.addEventListener('DOMContentLoaded', function() {
+    // 检测是否是iOS设备
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    // 检测是否是PWA模式
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  window.navigator.standalone || 
+                  document.referrer.includes('ios-app://');
+    
+    // 如果是iOS PWA模式，添加特殊处理
+    if (isIOS && isPWA) {
+        console.log('检测到iOS PWA模式，应用特殊处理');
+        
+        // 获取输入字段
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
+        
+        // 添加聚焦事件处理
+        [emailInput, passwordInput].forEach(input => {
+            if (!input) return;
+            
+            // 聚焦时滚动到视图中心
+            input.addEventListener('focus', function() {
+                // 延迟执行以确保键盘已弹出
+                setTimeout(() => {
+                    // 滚动到输入框位置
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+            
+            // 失焦时恢复
+            input.addEventListener('blur', function() {
+                // 延迟执行以确保键盘已收起
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 300);
+            });
+        });
+        
+        // 使用表单提交而不是点击事件
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                loginWithEmailPassword();
+            });
+        }
+    }
+});
+
 // 登录函数
 function loginWithEmailPassword() {
     // 清除之前的错误信息
@@ -94,6 +145,9 @@ function loginWithEmailPassword() {
     // 获取输入值
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    
+    // 检查输入是否存在
+    console.log('检查输入字段:', email ? '邮箱已输入' : '邮箱为空', password ? '密码已输入' : '密码为空');
     
     // 检查Firebase初始化状态
     if (!firebaseInitialized) {
