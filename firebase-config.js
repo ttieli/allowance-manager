@@ -12,17 +12,20 @@ const firebaseConfig = {
 // 标记Firebase状态
 let firebaseInitialized = false;
 
+// 声明全局数据库变量，这样其他脚本可以访问
+window.database = null;
+
 try {
     // 初始化Firebase
     firebase.initializeApp(firebaseConfig);
     console.log('Firebase初始化成功');
     firebaseInitialized = true;
     
-    // 获取数据库引用
-    const database = firebase.database();
+    // 获取数据库引用并设置为全局变量
+    window.database = firebase.database();
     
     // 测试数据库连接
-    database.ref('.info/connected').once('value')
+    window.database.ref('.info/connected').once('value')
         .then(snapshot => {
             const connected = snapshot.val();
             console.log('Firebase数据库连接状态:', connected ? '已连接' : '未连接');
