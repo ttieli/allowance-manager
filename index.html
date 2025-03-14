@@ -180,6 +180,7 @@
         <div class="data-management">
             <button onclick="exportData()">导出数据</button>
             <button onclick="showImportDialog()">导入数据</button>
+            <button onclick="showSettingsDialog()" class="settings-button">设置</button>
         </div>
         
         <div class="footer">
@@ -263,9 +264,32 @@
                     </select>
                 </div>
                 
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="quick-action-skip-dialog" name="skip-dialog">
+                    <label for="quick-action-skip-dialog">不再显示此对话框，直接记录操作</label>
+                </div>
+                
                 <div class="form-buttons">
                     <button type="button" onclick="submitQuickAction()">确定</button>
                     <button type="button" onclick="closeQuickDialog()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 设置对话框 -->
+    <div id="settings-dialog" class="dialog">
+        <div class="dialog-content">
+            <h2>系统设置</h2>
+            <form id="settings-form">
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="setting-show-dialog" name="show-dialog">
+                    <label for="setting-show-dialog">快捷操作时显示确认对话框</label>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" onclick="saveSettings()">保存</button>
+                    <button type="button" onclick="closeSettingsDialog()">取消</button>
                 </div>
             </form>
         </div>

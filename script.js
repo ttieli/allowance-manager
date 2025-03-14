@@ -20,6 +20,34 @@ const autoResetTypes = ['xiaoha-allowance', 'yezi-allowance'];
 // 同步状态变量
 let syncStatus = 'offline';
 
+// 用户设置
+let userSettings = {
+    showDetailDialog: true,  // 是否显示详细录入对话框
+    autoSaveChanges: false   // 是否自动保存更改（不显示对话框）
+};
+
+// 初始化时从localStorage获取设置
+function loadUserSettings() {
+    const savedSettings = localStorage.getItem('allowanceManagerSettings');
+    if (savedSettings) {
+        try {
+            userSettings = {...userSettings, ...JSON.parse(savedSettings)};
+            console.log('已加载用户设置:', userSettings);
+        } catch (e) {
+            console.error('加载用户设置失败:', e);
+        }
+    }
+}
+
+// 保存用户设置到localStorage
+function saveUserSettings() {
+    try {
+        localStorage.setItem('allowanceManagerSettings', JSON.stringify(userSettings));
+    } catch (e) {
+        console.error('保存用户设置失败:', e);
+    }
+}
+
 // 监听在线状态
 firebase.database().ref('.info/connected').on('value', (snapshot) => {
     if (snapshot.val() === true) {
@@ -698,8 +726,15 @@ function checkMonthlyReset() {
     }
 }
 
-// 快捷操作功能
+// 修改快捷操作功能
 function quickAction(type, action, amount) {
+    // 如果用户设置为不显示对话框，直接执行操作
+    if (!userSettings.showDetailDialog) {
+        // 使用自动操作流程
+        performQuickActionWithoutDialog(type, action, amount);
+        return;
+    }
+    
     const dialog = document.getElementById('quick-action-dialog');
     const title = document.getElementById('quick-dialog-title');
     const actionType = document.getElementById('quick-action-type');
@@ -727,6 +762,9 @@ function quickAction(type, action, amount) {
         operatorSelect.value = '椰子';
     }
     
+    // 添加不再显示对话框的选项
+    document.getElementById('quick-action-skip-dialog').checked = false;
+    
     // 显示对话框
     dialog.style.display = 'flex';
     
@@ -734,19 +772,123 @@ function quickAction(type, action, amount) {
     document.getElementById('quick-action-reason').focus();
 }
 
-// 关闭快捷对话框
-function closeQuickDialog() {
-    document.getElementById('quick-action-dialog').style.display = 'none';
-    document.getElementById('quick-action-form').reset();
+// 添加无对话框的快捷操作函数
+function performQuickActionWithoutDialog(type, action, amount) {
+    if (!firebase.auth().currentUser) {
+        alert('请先登录再进行操作');
+        return;
+    }
+    
+    const userPath = getUserDataPath();
+    if (!userPath) {
+        alert('无法获取用户数据路径');
+        return;
+    }
+    
+    // 设置默认操作人
+    let operator = getCurrentUserOperator();
+    if (!operator) {
+        if (type.includes('xiaoha')) {
+            operator = '小哈';
+        } else if (type.includes('yezi')) {
+            operator = '椰子';
+        } else {
+            operator = '系统';
+        }
+    }
+    
+    // 设置默认原因
+    const actionText = action === 'add' ? '增加' : '使用';
+    const amountText = type.includes('time') ? `${amount}分钟` : `${amount}个额度`;
+    const reason = `快捷${actionText}${amountText}`;
+    
+    // 显示同步状态
+    syncStatus = 'syncing';
+    updateSyncUI();
+    
+    // 显示操作反馈
+    const valueElement = document.getElementById(`${type}-value`);
+    if (valueElement) {
+        valueElement.classList.add('updating');
+        // 过渡动画效果，表示正在更新
+        setTimeout(() => valueElement.classList.remove('updating'), 1000);
+    }
+    
+    // 获取最新数据
+    database.ref(`${userPath}/${type}`).once('value')
+        .then(snapshot => {
+            const data = snapshot.val() || {
+                type: type,
+                value: 0,
+                lastUpdate: null,
+                history: []
+            };
+            
+            // 创建历史记录项
+            const historyItem = {
+                timestamp: new Date().toISOString(),
+                action: action,
+                amount: amount,
+                reason: reason,
+                operator: operator
+            };
+            
+            // 更新余额
+            if (action === 'add') {
+                data.value += amount;
+            } else {
+                data.value -= amount;
+            }
+            
+            // 更新最后更新时间
+            data.lastUpdate = new Date().toISOString();
+            
+            // 添加到历史记录
+            if (!data.history) data.history = [];
+            data.history.push(historyItem);
+            
+            // 限制历史记录最多保存50条
+            if (data.history.length > 50) {
+                data.history = data.history.slice(data.history.length - 50);
+            }
+            
+            // 保存数据
+            return database.ref(`${userPath}/${type}`).set(data);
+        })
+        .then(() => {
+            // 更新同步状态
+            syncStatus = 'online';
+            updateSyncUI();
+            
+            // 显示临时成功消息
+            showToast(`${typeNames[type]}${action === 'add' ? '增加' : '减少'}成功!`, 'success');
+        })
+        .catch(error => {
+            console.error(`Error submitting action for ${type}:`, error);
+            alert(`操作失败: ${error.message}`);
+            syncStatus = 'offline';
+            updateSyncUI();
+            
+            // 显示临时错误消息
+            showToast('操作失败，请重试', 'error');
+        });
 }
 
-// 提交快捷操作
+// 修改提交快捷操作函数
 function submitQuickAction() {
     const type = document.getElementById('quick-action-category').value;
     const action = document.getElementById('quick-action-type').value;
     const amount = parseFloat(document.getElementById('quick-action-amount').value);
     let reason = document.getElementById('quick-action-reason').value.trim();
     const operator = document.getElementById('quick-action-operator').value;
+    const skipDialog = document.getElementById('quick-action-skip-dialog').checked;
+    
+    // 如果勾选了"不再显示对话框"，更新用户设置
+    if (skipDialog) {
+        userSettings.showDetailDialog = false;
+        saveUserSettings();
+        showToast('已保存设置：操作不再显示对话框', 'info');
+    }
     
     if (!operator) {
         alert('请选择操作人');
@@ -774,6 +916,14 @@ function submitQuickAction() {
     // 显示同步状态
     syncStatus = 'syncing';
     updateSyncUI();
+    
+    // 显示操作反馈
+    const valueElement = document.getElementById(`${type}-value`);
+    if (valueElement) {
+        valueElement.classList.add('updating');
+        // 过渡动画效果，表示正在更新
+        setTimeout(() => valueElement.classList.remove('updating'), 1000);
+    }
     
     // 获取最新数据
     database.ref(`${userPath}/${type}`).once('value')
@@ -823,13 +973,82 @@ function submitQuickAction() {
             
             // 关闭对话框
             closeQuickDialog();
+            
+            // 显示临时成功消息
+            showToast(`${typeNames[type]}${action === 'add' ? '增加' : '减少'}成功!`, 'success');
         })
         .catch(error => {
             console.error(`Error submitting quick action for ${type}:`, error);
             alert(`操作失败: ${error.message}`);
             syncStatus = 'offline';
             updateSyncUI();
+            
+            // 显示临时错误消息
+            showToast('操作失败，请重试', 'error');
         });
+}
+
+// 添加设置对话框显示函数
+function showSettingsDialog() {
+    const dialog = document.getElementById('settings-dialog');
+    const showDialogCheckbox = document.getElementById('setting-show-dialog');
+    
+    // 设置当前选项值
+    showDialogCheckbox.checked = userSettings.showDetailDialog;
+    
+    // 显示对话框
+    dialog.style.display = 'flex';
+}
+
+// 关闭设置对话框
+function closeSettingsDialog() {
+    document.getElementById('settings-dialog').style.display = 'none';
+}
+
+// 保存设置
+function saveSettings() {
+    // 获取设置值
+    userSettings.showDetailDialog = document.getElementById('setting-show-dialog').checked;
+    
+    // 保存设置
+    saveUserSettings();
+    
+    // 关闭对话框
+    closeSettingsDialog();
+    
+    // 显示提示
+    showToast('设置已保存', 'success');
+}
+
+// 添加显示临时提示消息的功能
+function showToast(message, type = 'info') {
+    // 检查是否已存在toast元素，如果有则移除
+    const existingToast = document.getElementById('toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 创建toast元素
+    const toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    
+    // 添加到页面
+    document.body.appendChild(toast);
+    
+    // 显示toast
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    // 2秒后自动消失
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 2000);
 }
 
 // 导入初始数据
@@ -927,6 +1146,9 @@ function importInitialData() {
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
+    // 加载用户设置
+    loadUserSettings();
+    
     // 检测是否在GitHub Pages环境运行
     const isGitHubPages = window.location.hostname.includes('github.io');
     if (isGitHubPages) {
@@ -1045,4 +1267,10 @@ function setOperatorDefaultByEmail(email) {
             }
         }
     }
+}
+
+// 关闭快捷对话框
+function closeQuickDialog() {
+    document.getElementById('quick-action-dialog').style.display = 'none';
+    document.getElementById('quick-action-form').reset();
 } 

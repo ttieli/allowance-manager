@@ -805,4 +805,79 @@ input, select, textarea {
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+/* 添加复选框组样式 */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* 设置按钮样式 */
+.settings-button {
+    background-color: #5a6f8c;
+}
+
+.settings-button:hover {
+    background-color: #4a5f7c;
+}
+
+/* Toast通知样式 */
+#toast-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 12px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    min-width: 200px;
+}
+
+#toast-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+#toast-notification.success {
+    background-color: #4CAF50;
+}
+
+#toast-notification.error {
+    background-color: #F44336;
+}
+
+#toast-notification.info {
+    background-color: #2196F3;
+}
+
+/* 数值更新动画 */
+.balance-amount.updating {
+    animation: pulse 1s ease;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* 响应式调整 */
+@media (max-width: 600px) {
+    #toast-notification {
+        width: 80%;
+        max-width: none;
+        bottom: 10px;
+    }
 } 
