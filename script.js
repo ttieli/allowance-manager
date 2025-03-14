@@ -218,14 +218,34 @@ function formatDateTime(timestamp) {
 }
 
 // 获取当前用户的默认操作人
-function getCurrentUserOperator() {
-    const user = firebase.auth().currentUser;
-    if (!user) return null;
+function getCurrentUserOperator(email) {
+    // 支持旧的调用方式（无参数）
+    if (!email) {
+        const user = firebase.auth().currentUser;
+        if (!user) return null;
+        email = user.email;
+    }
     
     // 根据用户邮箱设置默认操作人
-    if (user.email === 'ttieli@hotmail.com') {
+    if (email === 'ttieli@hotmail.com') {
         return '爸爸';
-    } else if (user.email === 'betty106@hotmail.com') {
+    } else if (email === 'betty106@hotmail.com') {
+        return '妈妈';
+    } else if (email === 'xiaoha2009@icloud.com') {
+        return '小哈';
+    } else if (email === 'yezitest@icloud.com') {
+        return '椰子';
+    }
+    
+    // 基于邮箱前缀进行猜测
+    const username = email.split('@')[0].toLowerCase();
+    if (username.includes('xiaoha')) {
+        return '小哈';
+    } else if (username.includes('yezi')) {
+        return '椰子';
+    } else if (username.includes('papa') || username.includes('dad') || username.includes('father')) {
+        return '爸爸';
+    } else if (username.includes('mama') || username.includes('mom') || username.includes('mother')) {
         return '妈妈';
     }
     
@@ -814,11 +834,13 @@ function submitQuickAction() {
 
 // 导入初始数据
 function importInitialData() {
+    // 检查用户登录状态
     if (!firebase.auth().currentUser) {
         alert('请先登录再进行操作');
         return;
     }
     
+    // 二次确认
     if (!confirm('此操作将用初始数据覆盖当前数据，确定要继续吗？')) {
         return;
     }
@@ -833,15 +855,48 @@ function importInitialData() {
     syncStatus = 'syncing';
     updateSyncUI();
     
+    // 在GitHub Pages和本地环境下使用不同的路径
+    let dataUrl;
+    if (window.location.hostname.includes('github.io')) {
+        // GitHub Pages环境
+        const repoName = window.location.pathname.split('/')[1];
+        dataUrl = `/${repoName}/initial-data.json`;
+    } else {
+        // 本地或其他环境
+        dataUrl = './initial-data.json';
+    }
+    
+    console.log(`尝试从以下位置加载初始数据: ${dataUrl}`);
+    
     // 从initial-data.json加载初始数据
-    fetch('initial-data.json')
+    fetch(dataUrl)
         .then(response => {
             if (!response.ok) {
-                throw new Error('无法加载初始数据文件');
+                console.error(`数据加载失败，状态: ${response.status}`);
+                // 尝试备用路径
+                if (window.location.hostname.includes('github.io')) {
+                    console.log('尝试备用路径...');
+                    return fetch('./initial-data.json');
+                }
+                throw new Error(`无法加载初始数据文件 (状态码: ${response.status})`);
             }
             return response.json();
         })
         .then(initialData => {
+            // 验证数据格式
+            if (!initialData || typeof initialData !== 'object') {
+                throw new Error('初始数据格式无效');
+            }
+            
+            // 检查必要的字段
+            for (const type of allowanceTypes) {
+                if (!initialData[type] || typeof initialData[type] !== 'object') {
+                    throw new Error(`初始数据缺少必要字段: ${type}`);
+                }
+            }
+            
+            console.log('成功加载初始数据:', initialData);
+            
             // 保存到Firebase
             return database.ref(userPath).set(initialData);
         })
@@ -849,10 +904,22 @@ function importInitialData() {
             alert('初始数据导入成功!');
             syncStatus = 'online';
             updateSyncUI();
+            
+            // 刷新页面以显示新数据
+            window.location.reload();
         })
         .catch(error => {
             console.error('Error importing initial data:', error);
-            alert(`导入初始数据失败: ${error.message}`);
+            
+            // 检查是否是权限错误
+            if (error.code === 'PERMISSION_DENIED') {
+                alert('权限被拒绝: 您没有写入数据的权限，请联系管理员');
+            } else if (error.name === 'SyntaxError') {
+                alert('数据格式错误: 初始数据JSON格式不正确');
+            } else {
+                alert(`导入初始数据失败: ${error.message}\n请检查控制台获取详细信息`);
+            }
+            
             syncStatus = 'offline';
             updateSyncUI();
         });
@@ -860,29 +927,72 @@ function importInitialData() {
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
+    // 检测是否在GitHub Pages环境运行
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    if (isGitHubPages) {
+        console.log('检测到GitHub Pages环境，应用特定配置');
+        // 可在此处添加GitHub Pages特定的配置
+    }
+    
+    // 检测浏览器
+    const isFirefox = typeof InstallTrigger !== 'undefined';
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        console.log('检测到移动设备，应用移动优化');
+        document.body.classList.add('mobile-device');
+        
+        // 添加适合触摸的交互方式
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.classList.add('button-active');
+            });
+            button.addEventListener('touchend', function() {
+                this.classList.remove('button-active');
+            });
+        });
+    }
+    
     // 添加初始导入按钮到数据管理区域
     const dataManagementDiv = document.querySelector('.data-management');
     if (dataManagementDiv) {
         const initButton = document.createElement('button');
         initButton.innerText = '导入初始数据';
         initButton.onclick = importInitialData;
-        initButton.style.backgroundColor = '#f7f9fc';
-        initButton.style.color = '#607D8B';
+        initButton.className = 'import-initial-data-btn';
         dataManagementDiv.appendChild(initButton);
     }
     
-    // 更新用户界面
+    // 处理各浏览器事件处理器的兼容性问题
+    if (isFirefox || isSafari) {
+        console.log('检测到Firefox或Safari浏览器，应用兼容模式');
+        // 修复事件处理
+        document.querySelectorAll('button').forEach(button => {
+            const originalClick = button.onclick;
+            if (originalClick) {
+                button.onclick = null;
+                button.addEventListener('click', originalClick);
+            }
+        });
+    }
+    
+    // Firebase验证状态监听
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            // 更新用户界面
+            console.log(`用户已登录: ${user.email}`);
             document.getElementById('user-email').textContent = user.email;
             
             // 隐藏登录界面
             hideLoginUI();
             
-            // 加载所有数据
+            // 加载数据
             loadAllData();
+            
+            // 设置当前用户的操作人默认值
+            setOperatorDefaultByEmail(user.email);
         } else {
+            console.log('用户未登录');
             // 显示登录界面
             showLoginUI();
         }
@@ -912,4 +1022,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 每天检查一次月度重置
     setInterval(checkMonthlyReset, 24 * 60 * 60 * 1000);
-}); 
+});
+
+// 根据邮箱设置操作人默认值
+function setOperatorDefaultByEmail(email) {
+    if (!email) return;
+    
+    const operatorSelect = document.getElementById('action-operator');
+    const quickOperatorSelect = document.getElementById('quick-action-operator');
+    
+    if (!operatorSelect || !quickOperatorSelect) return;
+    
+    let defaultOperator = getCurrentUserOperator(email);
+    
+    if (defaultOperator) {
+        for (let select of [operatorSelect, quickOperatorSelect]) {
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === defaultOperator) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+} 

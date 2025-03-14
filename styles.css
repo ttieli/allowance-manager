@@ -250,6 +250,7 @@ h3 {
 .data-management {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 16px;
     margin-top: 32px;
     margin-bottom: 24px;
@@ -271,6 +272,16 @@ h3 {
 .data-management button:active {
     background-color: #E8EBF1;
     transform: scale(0.98);
+}
+
+/* 初始数据导入按钮 */
+.import-initial-data-btn {
+    background-color: #F2F4F7 !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+    width: 80% !important;
+    margin-top: 10px;
+    order: 3;
 }
 
 /* 对话框样式 */
@@ -701,6 +712,10 @@ header h1 {
         width: 45%;
     }
     
+    .import-initial-data-btn {
+        width: 100% !important;
+    }
+    
     .history-item {
         padding: 12px 10px;
     }
@@ -729,4 +744,65 @@ header h1 {
         -webkit-user-select: none;
         cursor: default; /* iOS不显示指针 */
     }
+}
+
+/* GitHub Pages修复 */
+.tab-button, .action-buttons button, .quick-add, 
+.quick-use, .data-management button, .form-buttons button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Firefox修复 */
+@-moz-document url-prefix() {
+    .tab-button, .action-buttons button, .data-management button {
+        background-image: none;
+    }
+}
+
+/* 移动设备触摸反馈 */
+.button-active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+    opacity: 0.9;
+}
+
+.mobile-device button:active {
+    background-color: var(--button-bg-hover);
+}
+
+/* 修复iOS Safari输入框阴影 */
+input, select, textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+}
+
+/* GitHub Pages特定修复 */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari特定修复 */
+    input, select, textarea, button {
+        font-size: 16px; /* 防止iOS Safari缩放 */
+    }
+    
+    .dialog-content {
+        transform: translateY(0);
+        -webkit-transform: translateY(0);
+    }
+}
+
+/* 添加平滑过渡效果 */
+.tab-content {
+    transition: opacity 0.2s ease;
+}
+
+.tab-content.active {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 } 
