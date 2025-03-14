@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>家庭额度管理系统</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- 使用相对路径，确保GitHub Pages兼容 -->
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
     
-    <!-- Firebase SDK -->
+    <!-- 更新为最新的Firebase SDK，使用HTTPS -->
     <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
-    <script src="firebase-config.js"></script>
+    <script src="./firebase-config.js"></script>
+    
+    <!-- 添加网站图标 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="manifest" href="./site.webmanifest">
+    <meta name="theme-color" content="#1C84FF">
 </head>
 <body>
     <!-- 登录界面 -->
@@ -177,7 +183,7 @@
         </div>
         
         <div class="footer">
-            <p>家庭额度管理系统 v2.1 | <a href="https://github.com/ttieli/allowance-manager" target="_blank">GitHub</a></p>
+            <p>家庭额度管理系统 v2.2 | <a href="https://github.com/ttieli/allowance-manager" target="_blank">GitHub</a></p>
         </div>
     </div>
     
@@ -265,6 +271,7 @@
         </div>
     </div>
     
-    <script src="script.js"></script>
+    <!-- 确保最后加载脚本 -->
+    <script src="./script.js"></script>
 </body>
 </html> 
