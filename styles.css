@@ -948,4 +948,59 @@ input, select, textarea {
     .version-history-btn, .sync-git-btn, .import-initial-data-btn {
         width: 100% !important;
     }
+}
+
+/* iOS安装提示样式 */
+.ios-install-tip {
+    background: linear-gradient(120deg, var(--primary-color), #3498db);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    position: relative;
+    display: none; /* 默认隐藏，通过JS检测iOS设备后显示 */
+    animation: slideDown 0.5s ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ios-install-tip .tip-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.ios-install-tip p {
+    margin: 5px 0;
+}
+
+.ios-install-tip .tip-detail {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.close-tip {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.close-tip:hover {
+    opacity: 1;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 } 

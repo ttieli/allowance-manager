@@ -8,14 +8,21 @@
     <link rel="stylesheet" href="./styles.css">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
     
+    <!-- iOS 图标和主屏幕优化 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./apple-touch-icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./apple-touch-icon-120.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="额度管理">
+    
     <!-- 更新为最新的Firebase SDK，使用HTTPS -->
     <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
     <script src="./firebase-config.js"></script>
     
-    <!-- 添加网站图标 -->
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <!-- 添加网站图标和PWA支持 -->
     <link rel="manifest" href="./site.webmanifest">
     <meta name="theme-color" content="#1C84FF">
 </head>
@@ -42,6 +49,14 @@
                 <button onclick="logout()" class="logout-btn">退出登录</button>
             </div>
         </header>
+        
+        <!-- iOS安装提示 -->
+        <div id="ios-install-tip" class="ios-install-tip">
+            <button class="close-tip" onclick="closeInstallTip()">&times;</button>
+            <div class="tip-icon">📱</div>
+            <p>添加到主屏幕，随时使用！</p>
+            <p class="tip-detail">点击 <strong>分享</strong> 按钮，然后选择 <strong>添加到主屏幕</strong></p>
+        </div>
         
         <div class="tab-container">
             <button class="tab-button active" data-tab="xiaoha-allowance">小哈额度</button>

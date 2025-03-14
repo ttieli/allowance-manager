@@ -1,0 +1,27 @@
+{
+    "name": "家庭额度管理系统",
+    "short_name": "额度管理",
+    "description": "管理家庭额度与时长的应用",
+    "icons": [
+        {
+            "src": "./apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        },
+        {
+            "src": "./apple-touch-icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png"
+        },
+        {
+            "src": "./apple-touch-icon-120.png",
+            "sizes": "120x120",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#F5F7FA",
+    "theme_color": "#1C84FF",
+    "orientation": "portrait"
+} 

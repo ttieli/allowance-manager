@@ -1325,6 +1325,50 @@ function showVersionHistory() {
         });
 }
 
+// 检测iOS设备并显示添加到主屏幕提示
+function checkIosInstallBanner() {
+    // 检测是否是iOS设备
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    // 检测是否已经作为PWA应用运行（是否已添加到主屏幕）
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
+                              window.navigator.standalone || 
+                              document.referrer.includes('ios-app://');
+    
+    // 如果是iOS设备且不是从主屏幕启动的
+    if (isIos && !isInStandaloneMode) {
+        // 检查是否已经关闭过提示
+        const hasClosedTip = localStorage.getItem('ios-install-tip-closed');
+        
+        if (!hasClosedTip) {
+            // 显示提示条幅
+            setTimeout(() => {
+                const tip = document.getElementById('ios-install-tip');
+                if (tip) {
+                    tip.style.display = 'block';
+                }
+            }, 3000); // 延迟3秒显示，让用户先浏览网页内容
+        }
+    }
+}
+
+// 关闭安装提示
+function closeInstallTip() {
+    const tip = document.getElementById('ios-install-tip');
+    if (tip) {
+        tip.style.display = 'none';
+        
+        // 记住用户已关闭提示，30天内不再显示
+        try {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            localStorage.setItem('ios-install-tip-closed', expiryDate.toISOString());
+        } catch (e) {
+            console.error('Error saving tip preference:', e);
+        }
+    }
+}
+
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
     // 加载用户设置
@@ -1439,6 +1483,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 每天检查一次月度重置
     setInterval(checkMonthlyReset, 24 * 60 * 60 * 1000);
+    
+    // 检查iOS安装提示
+    checkIosInstallBanner();
 });
 
 // 根据邮箱设置操作人默认值
