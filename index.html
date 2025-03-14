@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭额度管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <h1>家庭额度管理</h1>
+        
+        <div class="tab-container">
+            <button class="tab-button active" data-tab="xiaoha-allowance">小哈额度</button>
+            <button class="tab-button" data-tab="xiaoha-time">小哈时长</button>
+            <button class="tab-button" data-tab="yezi-allowance">椰子额度</button>
+            <button class="tab-button" data-tab="yezi-time">椰子时长</button>
+        </div>
+        
+        <div id="xiaoha-allowance" class="tab-content active">
+            <div class="balance-card">
+                <h2>小哈额度</h2>
+                <div class="balance-amount" id="xiaoha-allowance-value">0</div>
+                <div class="last-update" id="xiaoha-allowance-update">最后更新: 无记录</div>
+                
+                <div class="action-buttons">
+                    <button class="add-button" onclick="showActionDialog('xiaoha-allowance', 'add')">增加</button>
+                    <button class="use-button" onclick="showActionDialog('xiaoha-allowance', 'use')">使用</button>
+                </div>
+                
+                <h3>历史记录</h3>
+                <div class="history-list" id="xiaoha-allowance-history"></div>
+            </div>
+        </div>
+        
+        <div id="xiaoha-time" class="tab-content">
+            <div class="balance-card">
+                <h2>小哈时长</h2>
+                <div class="balance-amount" id="xiaoha-time-value">0</div>
+                <div class="last-update" id="xiaoha-time-update">最后更新: 无记录</div>
+                
+                <div class="action-buttons">
+                    <button class="add-button" onclick="showActionDialog('xiaoha-time', 'add')">增加</button>
+                    <button class="use-button" onclick="showActionDialog('xiaoha-time', 'use')">使用</button>
+                </div>
+                
+                <h3>历史记录</h3>
+                <div class="history-list" id="xiaoha-time-history"></div>
+            </div>
+        </div>
+        
+        <div id="yezi-allowance" class="tab-content">
+            <div class="balance-card">
+                <h2>椰子额度</h2>
+                <div class="balance-amount" id="yezi-allowance-value">0</div>
+                <div class="last-update" id="yezi-allowance-update">最后更新: 无记录</div>
+                
+                <div class="action-buttons">
+                    <button class="add-button" onclick="showActionDialog('yezi-allowance', 'add')">增加</button>
+                    <button class="use-button" onclick="showActionDialog('yezi-allowance', 'use')">使用</button>
+                </div>
+                
+                <h3>历史记录</h3>
+                <div class="history-list" id="yezi-allowance-history"></div>
+            </div>
+        </div>
+        
+        <div id="yezi-time" class="tab-content">
+            <div class="balance-card">
+                <h2>椰子时长</h2>
+                <div class="balance-amount" id="yezi-time-value">0</div>
+                <div class="last-update" id="yezi-time-update">最后更新: 无记录</div>
+                
+                <div class="action-buttons">
+                    <button class="add-button" onclick="showActionDialog('yezi-time', 'add')">增加</button>
+                    <button class="use-button" onclick="showActionDialog('yezi-time', 'use')">使用</button>
+                </div>
+                
+                <h3>历史记录</h3>
+                <div class="history-list" id="yezi-time-history"></div>
+            </div>
+        </div>
+        
+        <div class="data-management">
+            <button onclick="exportData()">导出数据</button>
+            <button onclick="showImportDialog()">导入数据</button>
+        </div>
+        
+        <div class="footer">
+            <p>家庭额度管理系统 v2.0 | <a href="https://github.com/YourUsername/allowance-manager" target="_blank">GitHub</a></p>
+        </div>
+    </div>
+    
+    <!-- 操作对话框 -->
+    <div id="action-dialog" class="dialog">
+        <div class="dialog-content">
+            <h2 id="dialog-title">增加额度</h2>
+            <form id="action-form">
+                <input type="hidden" id="action-type">
+                <input type="hidden" id="action-category">
+                
+                <div class="form-group">
+                    <label for="action-amount">数量:</label>
+                    <input type="number" id="action-amount" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="action-reason">原因:</label>
+                    <input type="text" id="action-reason" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="action-operator">操作人:</label>
+                    <select id="action-operator" required>
+                        <option value="爸爸">爸爸</option>
+                        <option value="妈妈">妈妈</option>
+                        <option value="小哈">小哈</option>
+                        <option value="椰子">椰子</option>
+                    </select>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" onclick="submitAction()">确定</button>
+                    <button type="button" onclick="closeDialog()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 导入对话框 -->
+    <div id="import-dialog" class="dialog">
+        <div class="dialog-content">
+            <h2>导入数据</h2>
+            <div class="form-group">
+                <label for="import-data">粘贴数据JSON:</label>
+                <textarea id="import-data" rows="10" required></textarea>
+            </div>
+            
+            <div class="form-buttons">
+                <button onclick="importData()">导入</button>
+                <button onclick="closeImportDialog()">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 
